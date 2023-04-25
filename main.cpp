@@ -2,10 +2,8 @@
 #include <iomanip>
 #include <vector>
 #include <cmath>
-#include <stdio.h>
 
 using namespace std;
-
 
 class Matrix {
 private:
@@ -98,16 +96,6 @@ public:
         return result;
     }
 
-    Matrix operator*(const double& scalar) const {
-        Matrix result(rows, columns);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                result(i, j) = (*this)(i, j) * scalar;
-            }
-        }
-        return result;
-    }
-
     Matrix transpose() const {
         Matrix result(columns, rows);
         for (int i = 0; i < rows; i++) {
@@ -141,7 +129,6 @@ public:
             }
             result += pow(-1, i) * (*this)(0, i) * temp.determinant();
         }
-
         cout << result << "\n";
         return result;
     }
@@ -201,77 +188,7 @@ public:
         }
         return result;
     }
-};
 
-class IdentityMatrix : public Matrix {
-public:
-    IdentityMatrix(int n) : Matrix(n, n) {
-        for (int i = 0; i < n; i++) {
-            (*this)(i, i) = 1;
-        }
-    }
-};
-
-class PermutationMatrix : public Matrix {
-public:
-    PermutationMatrix(int n, int i, int j) : Matrix(n, n) {
-        for (int k = 0; k < n; k++) {
-            (*this)(k, k) = 1;
-        }
-        (*this)(i, i) = 0;
-        (*this)(j, j) = 0;
-        (*this)(i, j) = 1;
-        (*this)(j, i) = 1;
-    }
-
-};
-
-class AugmentedMatrix : public Matrix {
-public:
-    Matrix* Right;
-    Matrix* Left;
-    AugmentedMatrix(Matrix A, Matrix B) : Matrix(A.get_size(), A.get_size() + B.get_size()) {
-        for (int i = 0; i < A.get_size(); i++) {
-            for (int j = 0; j < A.get_size(); j++) {
-                (*this)(i, j) = A(i, j);
-            }
-        }
-        for (int i = 0; i < B.get_size(); i++) {
-            for (int j = 0; j < B.get_size(); j++) {
-                (*this)(i, j + A.get_size()) = B(i, j);
-            }
-        }
-        Left = new Matrix(B.get_size(), B.get_size());
-        Right = new Matrix(A.get_size(), A.get_size());
-        for (int i = 0; i < B.get_size(); i++) {
-            for (int j = 0; j < B.get_size(); j++) {
-                Left->operator()(i, j) = (*this)(i, j + A.get_size());
-            }
-        }
-        for (int i = 0; i < A.get_rows(); i++) {
-            for (int j = 0; j < A.get_columns(); j++) {
-                Right->operator()(i, j) = (*this)(i, j);
-            }
-        }
-    }
-
-    void operator=(Matrix secMatrix) {
-        for (int i = 0; i < secMatrix.get_rows(); i++) {
-            for (int j = 0; j < secMatrix.get_columns(); j++) {
-                (*this)(i, j) = secMatrix(i, j);
-            }
-        }
-    }
-};
-
-class EliminationMatrix : public Matrix {
-public:
-    EliminationMatrix(int n, int i, int j, Matrix& A) : Matrix(n, n) {
-        for (int k = 0; k < n; k++) {
-            (*this)(k, k) = 1;
-        }
-        (*this)(i, j) = -A(i, j) / A(j, j);
-    }
 
 };
 
@@ -299,36 +216,6 @@ istream& operator>>(istream& inputStream, Matrix& matrix) {
     return inputStream;
 }
 
-
-
-Matrix inverse(Matrix matrix) {
-    if (matrix.get_rows() != matrix.get_columns()) {
-        cout << "Error: the dimensional problem occurred\n";
-        return Matrix(0, 0);
-    }
-    if (matrix.determinant() == 0) {
-        cout << "Error: the determinant is zero\n";
-        return Matrix(0, 0);
-    }
-    Matrix result(matrix.get_size(), matrix.get_size());
-    AugmentedMatrix augMatrix(matrix, IdentityMatrix(matrix.get_size()));
-    for (int i = 0; i < matrix.get_size(); i++) {
-        for (int j = 0; j < matrix.get_size(); j++) {
-            if (i != j) {
-                augMatrix = EliminationMatrix(matrix.get_size(), i, j, *augMatrix.Right) * augMatrix;
-            }
-        }
-    }
-    for (int i = 0; i < matrix.get_size(); i++) {
-        for (int j = 0; j < matrix.get_size(); j++) {
-            result(i, j) = augMatrix(i, j + matrix.get_size()) / augMatrix(i, i);
-        }
-    }
-    return result;
-}
-
-
-
 #ifdef WIN32
     #define GNUPLOT_NAME "C:\\gnuplot\\bin\\gnuplot -persist"
 #else
@@ -336,7 +223,7 @@ Matrix inverse(Matrix matrix) {
 #endif
 int main() {
     #ifdef WIN32
-    FILE* pipe = _popen(GNUPLOT_NAME, "w");
+        FILE* pipe = _popen(GNUPLOT_NAME, "w");
     #else
         FILE* pipe = popen(GNUPLOT_NAME, "w");
     #endif
@@ -344,8 +231,8 @@ int main() {
     int size;
     cin >> size;
 
-    int* t = new int[size];
-    int* b = new int[size];
+    double* t = new double[size];
+    double* b = new double[size];
 
     for (int i = 0; i < size; i++) {
         cin >> t[i] >> b[i];
@@ -363,7 +250,6 @@ int main() {
         }
         B(i, 0) = b[i];
     }
-   
 
     cout << "A:\n" << A;
 
@@ -371,9 +257,7 @@ int main() {
 
     cout << "A_T*A:\n" << A_transpose * A;
 
-    Matrix A_TA = A_transpose * A;
-
-    Matrix A_inverse = inverse(A_TA);
+    Matrix A_inverse = (A_transpose * A).inverse();
 
     cout << "(A_T*A)^-1:\n" << A_inverse;
 
@@ -385,10 +269,37 @@ int main() {
 
     cout << "x~:\n" << x;
 
+    double min_t = t[0];
+    double max_t = t[0];
+    for (int i = 1; i < size; i++) {
+        if (t[i] < min_t) {
+            min_t = t[i];
+        }
+        if (t[i] > max_t) {
+            max_t = t[i];
+        }
+    }
 
-    fprintf(pipe, "plot [-4 : 4] [-2 : 2] %lf*x**2 + %lf*x**1 + %lf*x**0 , '-' using 1:2 with points\n", x(0, 0), x(1, 0), x(2, 0));
+    fprintf(pipe, "set xrange [%lf:%lf]\n", min_t - 1, max_t + 1);
+
+    double min_b = b[0];
+    double max_b = b[0];
+
+    for (int i = 1; i < size; i++) {
+        if (b[i] < min_b) {
+            min_b = b[i];
+        }
+        if (b[i] > max_b) {
+            max_b = b[i];
+        }
+    }
+
+    fprintf(pipe, "set yrange [%lf:%lf]\n", min_b - 1, max_b + 1);
+
+    fprintf(pipe, "set grid\n");
+    fprintf(pipe, "plot %lf*x**3 + %lf*x**2 + %lf*x**1 + %lf*x**0 , '-' using 1:2 with points\n", x(0, 0), x(1, 0), x(2, 0), x(3, 0));
     for (int i = 0; i < size; i++) {
-        fprintf(pipe, "%d %d\n", t[i], b[i]);
+        fprintf(pipe, "%f\t%f\n", t[i], b[i]);
     }
     fprintf(pipe, "e\n");
     fflush(pipe);
