@@ -2,6 +2,7 @@
 
 Least Square Approximation with gnuplot
 
-[Joint2.pdf](https://github.com/1kkiRen/ALGAJoint2/files/11334511/Joint2.pdf)
+[Joint2.pdf](https://github.com/1kkiRen/AGLAJoint2/files/11336456/Joint2.pdf)
 
-![Plot](https://user-images.githubusercontent.com/49590801/234622135-d54ba68c-94e0-4761-895f-27ab2e8858f8.jpg)
+![Plot](https://user-images.githubusercontent.com/49590801/234678092-549332d6-1cac-4a58-b20d-d83735c29040.jpg)
+
