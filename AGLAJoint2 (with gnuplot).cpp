@@ -297,7 +297,7 @@ int main() {
     fprintf(pipe, "set yrange [%lf:%lf]\n", min_b - 1, max_b + 1);
 
     fprintf(pipe, "set grid\n");
-    fprintf(pipe, "plot %lf*x**3 + %lf*x**2 + %lf*x**1 + %lf*x**0 , '-' using 1:2 with points\n", x(0, 0), x(1, 0), x(2, 0), x(3, 0));
+    fprintf(pipe, "plot %lf*x**3 + %lf*x**2 + %lf*x**1 + %lf*x**0 , '-' using 1:2 with points\n", x(3, 0), x(2, 0), x(1, 0), x(0, 0));
     for (int i = 0; i < size; i++) {
         fprintf(pipe, "%f\t%f\n", t[i], b[i]);
     }
